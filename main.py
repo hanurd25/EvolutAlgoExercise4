@@ -1,7 +1,7 @@
 # This is a sample Python script.
 import numpy as np
 import random
-
+#changes
 randVer1 = random.uniform(-50, 50)
 randVer2 = random.uniform(-50, 50)
 expo1 = random.uniform(-5, 5)
