@@ -3,17 +3,19 @@ import numpy as np
 
 import random
 #changes
-#randVer1 = random.uniform(0, 50)
-#randVer2 = random.uniform(0, 50)
+#randVer1 = random.uniform(0, 10)
+#randVer2 = random.uniform(0, 10)
+#randVer3 = random.uniform(0, 10)
 #expo1 = random.randint(0, 2)
 #expo2 = random.randint(0, 2)
 #expo3 = random.randint(0, 2)
 
 populationSize = 5
-generations = 500000
+generations = 1000
 
-randVer1 = 29.6878887
+randVer1 = 7.6878887
 randVer2 = 2.18913
+randVer3 = 2.18913
 expo1 = 2
 expo2 = 2
 expo3 = 2
@@ -23,7 +25,7 @@ bestFitness = 0.0
 
 #I dont want to potentially do the root of a negative number
 def myFitnessFunction(paramsABC):
-    return ((paramsABC[0]**2)**expo1) + ((paramsABC[1] + randVer1)**expo2) + ((paramsABC[2] + randVer2)**(expo3))
+    return (-(paramsABC[0]-randVer1)**expo1 + 200 + ((paramsABC[1] + randVer1)**expo2)**expo2 + ((paramsABC[2] + randVer3)**(expo3)))
 
 def biasedRandomOutput(): #beta distrobution is the goated one
     #Shape parameters for the beta distribution
@@ -62,7 +64,10 @@ def mutation(individual):
         if 0.05 > random.uniform(0, 1):
 
             individual[i] = biasedRandomOutput()
-        #if (individual[i] + randomVariable > 50):
+        #elif:
+           # individual[i] = individual[i] + random.uniform(0, 1)
+
+            # (individual[i] + randomVariable > 50):
         #    individual[i] = random.uniform(0, 50)
         #else:
         #    individual[i] = individual[i] + random.uniform(0, 1) # child1
