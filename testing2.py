@@ -1,4 +1,3 @@
-
 # This is a sample Python script.
 import numpy as np
 
@@ -16,20 +15,17 @@ expo1 = 2.8887135
 expo2 = -3.7088987
 expo3 = 3.561440
 
-def myFitnessFunction(a, b, c):
-    return (a**2)**expo1 * ((b - randVer1)**expo2) * ((c + randVer2)**(expo3))
+def myFitnessFunction(paramsABC):
+    return ((paramsABC[0]**2)**expo1) - ((paramsABC[1] - randVer1)**expo2) +((paramsABC[2] + randVer2)**(expo3))
 
 def initializePopulation(populationSize):
     population = []
     for _ in range(populationSize):
-        a = random.uniform(-50, 50)
-        b = random.uniform(-50, 50)
-        c = random.uniform(-50, 50)
-        population.append((a, b, c))
+        population.append([random.uniform(-50, 50), random.uniform(-50, 50), random.uniform(-50, 50)])
     return population
 
 def calculateFitness(population):
-    return [myFitnessFunction(*individual) for individual in population]
+    return [myFitnessFunction(individual) for individual in population]
 
 def selection(population, fitnessValues):
     # Simple tournament selection
@@ -41,12 +37,15 @@ def selection(population, fitnessValues):
         selectedParents.append(population[tournamentIndices[np.argmax(tournamentFitness)]])
     return selectedParents
 
-def crossover(parent1, parent2):
-    # Simple one-point crossover
-    crossoverPoint = random.randint(1, len(parent1) - 1)
-    child1 = tuple(np.clip(parent1[:crossoverPoint] + parent2[crossoverPoint:], -50, 50))
-    child2 = tuple(np.clip(parent2[:crossoverPoint] + parent1[crossoverPoint:], -50, 50))
-    return child1, child2
+
+def crossover(parent1, parent2, probabilityList):
+    i= 0
+    for gene1, gene2 in zip(parent1, parent2):
+        if (probabilityList[i] > random.uniform(0, 1)):
+            child1[i] = gene2
+            child2[i] = gene1
+        i= i+1
+    return parent1, parent2
 
 def mutation(individual):
     # Simple mutation by randomly perturbing one gene
@@ -81,6 +80,11 @@ if __name__ == '__main__':
         # Apply mutation to offspring
         offspring = [mutation(individual) for individual in offspring]
 
+        # Keep the best individual from the current population
+        best_index = np.argmax(fitnessValues)
+        offspring.append(population[best_index])
+
+        # Update the population with the new offspring
         population = offspring
 
         # Recalculate fitness values for the new population
@@ -88,7 +92,13 @@ if __name__ == '__main__':
 
         # Optionally, print or store the best solution and its fitness value
         bestSolution = population[np.argmax(fitnessValues)]
-        bestFitness = max(fitnessValues)
-
-        print(f"Generation {generation + 1}: Best Solution {bestSolution}, Best Fitness {bestFitness}")
+        bestFitness = myFitnessFunction(bestSolution)
+        print(randVer1)
+        print(randVer2)
+        print(expo1)
+        print(expo2)
+        print(expo3)
+        print(f"This is just for testing {myFitnessFunction([1, 3, 4])}")
+        print(f"Generation {generation + 1}: Best Solution {bestSolution}")
+        print(f"The best fitness is Best Fitness {myFitnessFunction(bestSolution)}")
     print(f"In this case, the function was f(a,b,c) = (a**2)^{expo1} * ((b - {randVer1})^{expo2} * (c + {randVer2})^{expo3} .")
