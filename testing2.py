@@ -1,6 +1,6 @@
 # This is a sample Python script.
 import numpy as np
-
+import matplotlib.pyplot as plt
 import random
 #changes
 #randVer1 = random.uniform(0, 10)
@@ -10,8 +10,12 @@ import random
 #expo2 = random.randint(0, 2)
 #expo3 = random.randint(0, 2)
 
-populationSize = 10
-generations = 250
+bestPerformers = [] #List for holding the best performer for every generation
+averageFitness = []
+medianFitness = []
+
+populationSize = 1000
+generations = 500
 #250 generations gives a very accurate output, in the end.
 
 
@@ -94,13 +98,13 @@ if __name__ == '__main__':
         #Might be handy if i want to create multiple children for each iteration
         offspring = [mutation(individual) for individual in offspring]
 
-        population = population + offspring
-
         # Replace worst performing individuals with new children
         for _ in range(0, len(offspring)):  # the worst performer for each itiration with be replaced with a new child
             worstIndex = np.argmin(fitnessValues)  # finding the index of the worst performing induvidual
             del population[worstIndex]  # using del to performe removal of the worst permorming
             del fitnessValues[worstIndex]
+
+        population = population + offspring
 
 
         fitnessValues = calculateFitness(population)
@@ -108,15 +112,35 @@ if __name__ == '__main__':
         # Get indices of worst individuals
         #worst_indices = np.argsort(new_fitness_values)[:2]
 
-
         # Update population and fitness values
 
-        best_index = np.argmax(fitnessValues)
-        best_solution = population[best_index]
-        best_fitness = fitnessValues[best_index]
-        print(f" \n The length of the population is {len(population)} \n")
-        print(f"this is the worst performer {population[np.argmin(fitnessValues)]}")
-        print(f"Generation {generation + 1}: Best Solution {best_solution}")
-        print(f"The best fitness is {best_fitness}")
+        bestIndex = np.argmax(fitnessValues)
+        bestSolution = population[bestIndex]
+        bestFitness = fitnessValues[bestIndex]
 
-    print(f"In this case, the function was f(a,b,c) = (a**2)^{expo1} * ((b + {randVer1})^{expo2} * (c + {randVer2})^{expo3} .")
+        bestPerformers.append([generation + 1, bestFitness])
+        averageFitness.append([generation + 1, sum(fitnessValues)/len(fitnessValues)])
+        medianFitness.append([generation + 1, np.median(fitnessValues)])
+
+        print(f" \n The length of the population is: {len(population)} \n")
+        print(f"This is the worst performer: {population[np.argmin(fitnessValues)]}")
+        print(f"Generation {generation + 1}: Best Solution {bestSolution}")
+        print(f"The best fitness is {bestFitness}")
+
+
+    print(f"In this case, the function was f(a,b,c) = -(a-{randVer1})^{expo1} - ((b - {randVer1})^{expo2} + (c + {randVer2})^{expo3} .")
+
+    # Plotting
+    generationsBest, fitnessBest = zip(*bestPerformers)
+    generationsAvg, fitnessAvg = zip(*averageFitness)
+    generationsMedian, fitnessMedian = zip(*medianFitness)
+
+    plt.plot(generationsBest, fitnessBest, label='Best performer')
+    plt.plot(generationsAvg, fitnessAvg, label='Average fitness')
+    plt.plot(generationsMedian, fitnessMedian, label='Median performer')
+
+    plt.xlabel('Generation')
+    plt.ylabel('Fitness')
+    plt.title('Comparing best performer, average fitness, and median performer')
+    plt.legend()
+    plt.show()
