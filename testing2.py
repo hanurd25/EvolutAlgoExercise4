@@ -10,11 +10,13 @@ import random
 #expo2 = random.randint(0, 2)
 #expo3 = random.randint(0, 2)
 
-populationSize = 5
-generations = 1000
+populationSize = 10
+generations = 250
+#250 generations gives a very accurate output, in the end.
+
 
 randVer1 = 7.6878887
-randVer2 = 2.18913
+randVer2 = 40.18913
 randVer3 = 2.18913
 expo1 = 2
 expo2 = 2
@@ -25,12 +27,12 @@ bestFitness = 0.0
 
 #I dont want to potentially do the root of a negative number
 def myFitnessFunction(paramsABC):
-    return (-(paramsABC[0]-randVer1)**expo1 + 200 + ((paramsABC[1] + randVer1)**expo2)**expo2 + ((paramsABC[2] + randVer3)**(expo3)))
+    return (-(paramsABC[0]-randVer1)**expo1 - ((paramsABC[1] - randVer2)**expo2) + ((paramsABC[2] + randVer3)**(expo3))+ 5000)
 
 def biasedRandomOutput(): #beta distrobution is the goated one
     #Shape parameters for the beta distribution
-    alpha = 0.7
-    beta = 0.7
+    alpha = 0.8
+    beta = 0.8
     return np.random.beta(alpha, beta) * 50  # Scaling to the range to be from 0 to  50
 
 
@@ -60,12 +62,16 @@ def crossover(parent1, parent2, probabilityList):
 def mutation(individual):
     # Simple mutation by randomly perturbing one gene
     i = 0
-    for i in range(0, len(individual)):
+    for i in range(0, len(individual)):                                  # There is a 5 percent chance of overwriting a value inside the list with a new randome one
         if 0.05 > random.uniform(0, 1):
 
             individual[i] = biasedRandomOutput()
-        #elif:
-           # individual[i] = individual[i] + random.uniform(0, 1)
+
+        elif (0.12 > random.uniform(0, 1)) and (individual[i]+1 <= 50): #There is a higher chance of a small adjustment to the genes
+            individual[i] = individual[i] + random.uniform(0, 1)
+
+        elif (0.25 > random.uniform(0, 1)) and (individual[i] + 0.25 <= 50): #There is a higher chance of a small adjustment to the genes
+            individual[i] = individual[i] + random.uniform(0, 0.25)
 
             # (individual[i] + randomVariable > 50):
         #    individual[i] = random.uniform(0, 50)
