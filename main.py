@@ -1,94 +1,145 @@
-
-# This is a sample Python script.
 import numpy as np
-
+import matplotlib.pyplot as plt
 import random
 #changes
-#randVer1 = random.uniform(-50, 50)
-#randVer2 = random.uniform(-50, 50)
-#expo1 = random.uniform(-5, 5)
-#expo2 = random.uniform(-5, 5)
-#expo3 = random.uniform(-5, 5)
+#randVer1 = random.uniform(0, 10)
+#randVer2 = random.uniform(0, 10)
+#randVer3 = random.uniform(0, 10)
+#expo1 = random.randint(0, 2)
+#expo2 = random.randint(0, 2)
+#expo3 = random.randint(0, 2)
 
-randVer1 = -29.6878887
-randVer2 = -2.18913
-expo1 = 2.8887135
-expo2 = -3.7088987
-expo3 = 3.561440
+bestPerformers = [] #List for holding the best performer for every generation
+averageFitness = []
+medianFitness = []
 
-def myFitnessFunction(a, b, c):
-    return (a**2)**expo1 * ((b - randVer1)**expo2) * ((c + randVer2)**(expo3))
+populationSize = 1000
+generations = 500
+#250 generations gives a very accurate output, in the end.
 
-def initializePopulation(populationSize):
+
+randVer1 = 7.6878887
+randVer2 = 40.18913
+randVer3 = 2.18913
+expo1 = 2
+expo2 = 2
+expo3 = 2
+probabilityList = [0.5, 0.5, 0.5]
+
+bestFitness = 0.0
+
+#I dont want to potentially do the root of a negative number
+def myFitnessFunction(paramsABC):
+    return (-(paramsABC[0]-randVer1)**expo1 - ((paramsABC[1] - randVer2)**expo2) + ((paramsABC[2] + randVer3)**(expo3))+ 5000)
+
+def biasedRandomOutput(): #beta distrobution is the goated one
+    #Shape parameters for the beta distribution
+    alpha = 0.8
+    beta = 0.8
+    return np.random.beta(alpha, beta) * 50  # Scaling to the range to be from 0 to  50
+
+
+def initializePopulation(populationSize): #returning a list of the population
     population = []
     for _ in range(populationSize):
-        a = random.uniform(-50, 50)
-        b = random.uniform(-50, 50)
-        c = random.uniform(-50, 50)
-        population.append((a, b, c))
+        population.append([biasedRandomOutput(), biasedRandomOutput(), biasedRandomOutput()])
     return population
 
 def calculateFitness(population):
-    return [myFitnessFunction(*individual) for individual in population]
+    return [myFitnessFunction(individual) for individual in population]
 
 def selection(population, fitnessValues):
-    # Simple tournament selection
-    selectedParents = []
-    for _ in range(len(population) // 2 * 2):  # Ensure an even number of parents
-        tournamentSize = 3
-        tournamentIndices = random.sample(range(len(population)), tournamentSize)
-        tournamentFitness = [fitnessValues[i] for i in tournamentIndices]
-        selectedParents.append(population[tournamentIndices[np.argmax(tournamentFitness)]])
-    return selectedParents
+    return random.choices(population, weights=fitnessValues, k=2)
 
-def crossover(parent1, parent2):
-    # Simple one-point crossover
-    crossoverPoint = random.randint(1, len(parent1) - 1)
-    child1 = tuple(np.clip(parent1[:crossoverPoint] + parent2[crossoverPoint:], -50, 50))
-    child2 = tuple(np.clip(parent2[:crossoverPoint] + parent1[crossoverPoint:], -50, 50))
-    return child1, child2
+
+def crossover(parent1, parent2, probabilityList):
+    child1 = []
+    for gene1, gene2, prob in zip(parent1, parent2, probabilityList):
+        if random.uniform(0, 1) < prob:
+            child1.append(gene2)
+        else:
+            child1.append(gene1)
+    return child1
+
 
 def mutation(individual):
     # Simple mutation by randomly perturbing one gene
-    mutationPoint = random.randint(0, len(individual) - 1)
-    perturbation = random.uniform(-0.5, 0.5)
-    mutatedValue = np.clip(individual[mutationPoint] + perturbation, -50, 50)
-    individual = list(individual)
-    individual[mutationPoint] = mutatedValue
-    return tuple(individual)
+    i = 0
+    for i in range(0, len(individual)):                                  # There is a 5 percent chance of overwriting a value inside the list with a new randome one
+        if 0.05 > random.uniform(0, 1):
+
+            individual[i] = biasedRandomOutput()
+
+        elif (0.12 > random.uniform(0, 1)) and (individual[i]+1 <= 50): #There is a higher chance of a small adjustment to the genes
+            individual[i] = individual[i] + random.uniform(0, 1)
+
+        elif (0.25 > random.uniform(0, 1)) and (individual[i] + 0.25 <= 50): #There is a higher chance of a small adjustment to the genes
+            individual[i] = individual[i] + random.uniform(0, 0.25)
+
+            # (individual[i] + randomVariable > 50):
+        #    individual[i] = random.uniform(0, 50)
+        #else:
+        #    individual[i] = individual[i] + random.uniform(0, 1) # child1
+    return individual
 
 if __name__ == '__main__':
-    population_size = 50
-    generations = 500
-
-    population = initializePopulation(population_size)
+    population = initializePopulation(populationSize)
 
     for generation in range(generations):
         fitnessValues = calculateFitness(population)
 
-        # Select parents
-        parents = selection(population, fitnessValues)
+        parent1, parent2 = selection(population, fitnessValues)
 
-        # Create offspring through crossover
-        offspring = []
-        for i in range(0, len(parents), 2):
-            parent1 = parents[i]
-            parent2 = parents[i + 1]
-            child1, child2 = crossover(parent1, parent2)
-            offspring.append(child1)
-            offspring.append(child2)
 
-        # Apply mutation to offspring
+        offspring = [crossover(parent1, parent2, probabilityList)]
+
+
+        #Might be handy if i want to create multiple children for each iteration
         offspring = [mutation(individual) for individual in offspring]
 
-        population = offspring
+        # Replace worst performing individuals with new children
+        for _ in range(0, len(offspring)):  # the worst performer for each itiration with be replaced with a new child
+            worstIndex = np.argmin(fitnessValues)  # finding the index of the worst performing induvidual
+            del population[worstIndex]  # using del to performe removal of the worst permorming
+            del fitnessValues[worstIndex]
 
-        # Recalculate fitness values for the new population
+        population = population + offspring
+
+
         fitnessValues = calculateFitness(population)
 
-        # Optionally, print or store the best solution and its fitness value
-        bestSolution = population[np.argmax(fitnessValues)]
-        bestFitness = max(fitnessValues)
+        # Get indices of worst individuals
+        #worst_indices = np.argsort(new_fitness_values)[:2]
 
-        print(f"Generation {generation + 1}: Best Solution {bestSolution}, Best Fitness {bestFitness}")
-    print(f"In this case, the function was f(a,b,c) = (a**2)^{expo1} * ((b - {randVer1})^{expo2} * (c + {randVer2})^{expo3} .")
+        # Update population and fitness values
+
+        bestIndex = np.argmax(fitnessValues)
+        bestSolution = population[bestIndex]
+        bestFitness = fitnessValues[bestIndex]
+
+        bestPerformers.append([generation + 1, bestFitness])
+        averageFitness.append([generation + 1, sum(fitnessValues)/len(fitnessValues)])
+        medianFitness.append([generation + 1, np.median(fitnessValues)])
+
+        print(f" \n The length of the population is: {len(population)} \n")
+        print(f"This is the worst performer: {population[np.argmin(fitnessValues)]}")
+        print(f"Generation {generation + 1}: Best Solution {bestSolution}")
+        print(f"The best fitness is {bestFitness}")
+
+
+    print(f"In this case, the function was f(a,b,c) = -(a-{randVer1})^{expo1} - ((b - {randVer1})^{expo2} + (c + {randVer2})^{expo3} .")
+
+    # Plotting
+    generationsBest, fitnessBest = zip(*bestPerformers)
+    generationsAvg, fitnessAvg = zip(*averageFitness)
+    generationsMedian, fitnessMedian = zip(*medianFitness)
+
+    plt.plot(generationsBest, fitnessBest, label='Best performer')
+    plt.plot(generationsAvg, fitnessAvg, label='Average fitness')
+    plt.plot(generationsMedian, fitnessMedian, label='Median performer')
+
+    plt.xlabel('Generation')
+    plt.ylabel('Fitness')
+    plt.title('Comparing best performer, average fitness, and median performer')
+    plt.legend()
+    plt.show()
