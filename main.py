@@ -88,9 +88,10 @@ if __name__ == '__main__':
     for generation in range(generations):
         fitnessValues = calculateFitness(population)
 
+        #Selecting parents with the fitness proportional selection method
         parent1, parent2 = selection(population, fitnessValues)
 
-
+        #Creating the new offspring with the uniform crossover technique
         offspring = [crossover(parent1, parent2, probabilityList)]
 
 
@@ -103,13 +104,13 @@ if __name__ == '__main__':
             del population[worstIndex]  # using del to performe removal of the worst permorming
             del fitnessValues[worstIndex]
 
+
+        #adding the offspring to the population
         population = population + offspring
 
 
         fitnessValues = calculateFitness(population)
 
-        # Get indices of worst individuals
-        #worst_indices = np.argsort(new_fitness_values)[:2]
 
         # Update population and fitness values
 
