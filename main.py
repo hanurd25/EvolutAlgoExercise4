@@ -5,6 +5,7 @@
 
 #Inspiration for the creation of the fitness function and the mutation functin: https://medium.com/@Data_Aficionado_1083/genetic-algorithms-optimizing-success-through-evolutionary-computing-f4e7d452084f
 
+##
 import numpy as np
 import matplotlib.pyplot as plt
 import random
